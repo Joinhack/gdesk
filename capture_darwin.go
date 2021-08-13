@@ -54,7 +54,7 @@ func NewFrame(surface C.IOSurfaceRef) *Frame {
 	return frame
 }
 
-func (f *Frame) Convert(w, h int) {
+func (f *Frame) convert(w, h int) {
 	surface := f.inner
 	plane0_addr := C.IOSurfaceGetBaseAddressOfPlane(surface, 0)
 	plane0_l := int(C.IOSurfaceGetBytesPerRowOfPlane(surface, 0))
@@ -100,6 +100,7 @@ type Capturer struct {
 	stream  C.CGDisplayStreamRef
 	stopped int32
 	frame   unsafe.Pointer
+	dW, dH 	int
 }
 
 //export CaptureStop
@@ -130,7 +131,11 @@ func NewCapturer() *Capturer {
 }
 
 func (cap *Capturer) GetFrame() *Frame {
-	return (*Frame)(atomic.LoadPointer(&cap.frame))
+	f := (*Frame)(atomic.LoadPointer(&cap.frame))
+	if f != nil {
+		f.convert(cap.dW, cap.dH)
+	}
+	return f
 }
 
 func (cap *Capturer) Start(display *Display) error {
@@ -149,6 +154,8 @@ func (cap *Capturer) Start(display *Display) error {
 			break
 		}
 	}
+	cap.dW = int(w)
+	cap.dH = int(h)
 	return nil
 }
 

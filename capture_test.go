@@ -5,26 +5,25 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"time"
 )
 
 func TestCapture(t *testing.T) {
 	display := GetPrimaryDisplay()
 	var c = NewCapturer()
 	c.Start(display)
+	var f *Frame
 	for {
-		f := c.GetFrame()
+		f = c.GetFrame()
 		if f != nil {
 			break
 		}
 	}
-	f := c.GetFrame()
 	w := int(display.Width())
 	h := int(display.Height())
 	rect := image.Rect(0, 0, w, h)
 	
-	
 	img := image.NewRGBA(rect)
-	f.Convert(w, h)
 	rgb := i420ToRgb(w, h, f.data)
 	file, _ := os.Create("image.png")
 	dst := make([]byte, w*h*4)
@@ -38,11 +37,11 @@ func TestCapture(t *testing.T) {
 			dst[idx+2] = rgb[i+2]
 			dst[idx+3] = 255
 			idx += 4
-			
 		}
 	}
 	img.Pix = dst
 	png.Encode(file, img)
 	f.Release()
+	time.Sleep(20*time.Millisecond)
 	c.Stop()
 }
