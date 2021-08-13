@@ -34,7 +34,7 @@ void dict_release(CFDictionaryRef p) {
 }
 
 CGDisplayStreamRef DisplayStreamCreateWithDispatchQueue(void *cap, CGDirectDisplayID display, uint outputWidth, uint outputHeight, CFDictionaryRef properties, dispatch_queue_t queue) {
-	return CGDisplayStreamCreateWithDispatchQueue(display, outputWidth, outputHeight, '420v', properties, queue, ^(CGDisplayStreamFrameStatus status, uint64_t displayTime, IOSurfaceRef frameSurface, CGDisplayStreamUpdateRef updateRef) {
+	return CGDisplayStreamCreateWithDispatchQueue(display, outputWidth, outputHeight, '420f', properties, queue, ^(CGDisplayStreamFrameStatus status, uint64_t displayTime, IOSurfaceRef frameSurface, CGDisplayStreamUpdateRef updateRef) {
 		if (kCGDisplayStreamFrameStatusStopped == status) {
 			CaptureStop(cap);
 		} else if (kCGDisplayStreamFrameStatusFrameComplete == status) {
