@@ -89,6 +89,7 @@ func (f *Frame) Release() {
 			break
 		}
 	}
+	C.IOSurfaceUnlock(f.inner, C.kIOSurfaceLockReadOnly, nil)
 	C.IOSurfaceDecrementUseCount(f.inner)
 	C.CFRelease(C.CFTypeRef(f.inner))
 }
