@@ -21,13 +21,14 @@ func TestCapture(t *testing.T) {
 	w := int(display.Width())
 	h := int(display.Height())
 	rect := image.Rect(0, 0, w, h)
-	rgb := make([]byte, w*h*3)
+	
 	
 	img := image.NewRGBA(rect)
-	i420ToRgb(w, h, f.data, rgb)
+	f.Convert(w, h)
+	rgb := i420ToRgb(w, h, f.data)
 	file, _ := os.Create("image.png")
 	dst := []byte{}
-	stride := len(f.data) / h;
+	stride := len(rgb) / h;
 	for y :=0; y < h; y++ {
 		for x :=0; x < w; x++ {
 			i := stride * y + 3 * x

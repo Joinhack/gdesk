@@ -49,17 +49,35 @@ func NewFrame(surface C.IOSurfaceRef) *Frame {
 	C.CFRetain(C.CFTypeRef(surface))
 	C.IOSurfaceIncrementUseCount(surface)
 	C.IOSurfaceLock(surface, C.kIOSurfaceLockReadOnly, nil)
-	l := int(C.IOSurfaceGetAllocSize(surface))
-	header := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(C.IOSurfaceGetBaseAddress(surface))),
-		Cap:  l,
-		Len:  l,
-	}
-	bs := *(*[]byte)(unsafe.Pointer(&header))
-	frame.data = bs
 	runtime.SetFinalizer(frame, (*Frame).Release)
 	frame.inited = 1
 	return frame
+}
+
+func (f *Frame) Convert(w, h int) {
+	surface := f.inner
+	plane0_addr := C.IOSurfaceGetBaseAddressOfPlane(surface, 0)
+	plane0_l := int(C.IOSurfaceGetBytesPerRowOfPlane(surface, 0))
+
+	plane1_addr := C.IOSurfaceGetBaseAddressOfPlane(surface, 1)
+	plane1_l := int(C.IOSurfaceGetBytesPerRowOfPlane(surface, 1))
+
+	plane0_header := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(plane0_addr)),
+		Cap:  plane0_l,
+		Len:  plane0_l,
+	}
+
+	plane1_header := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(plane1_addr)),
+		Cap:  plane1_l,
+		Len:  plane1_l,
+	}
+
+	plane0 := *(*[]byte)(unsafe.Pointer(&plane0_header))
+	plane1 := *(*[]byte)(unsafe.Pointer(&plane1_header))
+	
+	f.data = nv12_to_i420(plane0, plane1, w, h)
 }
 
 func (f *Frame) Release() {
