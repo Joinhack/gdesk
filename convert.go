@@ -1,6 +1,5 @@
 package gdesk
 
-
 /*
 #cgo pkg-config: vpx
 #cgo LDFLAGS: -lyuv
@@ -9,11 +8,11 @@ package gdesk
 import "C"
 
 import (
-	"unsafe"
 	"reflect"
+	"unsafe"
 )
 
-func i420ToRgb(w,h int, src []byte) (dest []byte) {
+func i420ToRgb(w, h int, src []byte) (dest []byte) {
 	dest = make([]byte, w*h*3)
 	s := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&src)).Data)
 	d := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&dest)).Data)
@@ -22,7 +21,7 @@ func i420ToRgb(w,h int, src []byte) (dest []byte) {
 }
 
 func nv12_to_i420(plan0, plan1 []byte, w, h int) (dest []byte) {
-	dest = make([]byte, h * w * 12 / 8)
+	dest = make([]byte, h*w*12/8)
 	p0 := (*reflect.SliceHeader)(unsafe.Pointer(&plan0))
 	p1 := (*reflect.SliceHeader)(unsafe.Pointer(&plan1))
 	d := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&dest)).Data)

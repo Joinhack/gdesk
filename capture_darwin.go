@@ -76,7 +76,7 @@ func (f *Frame) convert(w, h int) {
 
 	plane0 := *(*[]byte)(unsafe.Pointer(&plane0_header))
 	plane1 := *(*[]byte)(unsafe.Pointer(&plane1_header))
-	
+
 	f.data = nv12_to_i420(plane0, plane1, w, h)
 }
 
@@ -101,7 +101,7 @@ type Capturer struct {
 	stream  C.CGDisplayStreamRef
 	stopped int32
 	frame   unsafe.Pointer
-	dW, dH 	int
+	dW, dH  int
 }
 
 //export CaptureStop
