@@ -14,7 +14,6 @@ func TestCapture(t *testing.T) {
 	c.Start(display)
 	var f *Frame
 	for {
-	for {
 		f = c.GetFrame()
 		if f != nil {
 			break
@@ -44,7 +43,6 @@ func TestCapture(t *testing.T) {
 	img.Pix = dst
 	png.Encode(file, img)
 	f.Release()
-}
 	time.Sleep(20 * time.Millisecond)
 	c.Stop()
 }

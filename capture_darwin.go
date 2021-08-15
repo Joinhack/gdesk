@@ -95,13 +95,14 @@ func (f *Frame) Release() {
 }
 
 type Capturer struct {
-	ref     unsafe.Pointer
-	queue   C.dispatch_queue_t
-	dict    C.CFDictionaryRef
-	stream  C.CGDisplayStreamRef
-	stopped int32
-	frame   unsafe.Pointer
-	dW, dH  int
+	ref      unsafe.Pointer
+	queue    C.dispatch_queue_t
+	dict     C.CFDictionaryRef
+	stream   C.CGDisplayStreamRef
+	framePin int32
+	stopped  int32
+	frame    unsafe.Pointer
+	dW, dH   int
 }
 
 //export CaptureStop
@@ -127,14 +128,28 @@ func CaptureComplete(c unsafe.Pointer, surf C.IOSurfaceRef) {
 
 func NewCapturer() *Capturer {
 	return &Capturer{
-		stopped: 1,
+		stopped:  1,
+		framePin: 0,
 	}
 }
 
 func (cap *Capturer) GetFrame() *Frame {
+	if atomic.LoadInt32(&cap.framePin) == 1 {
+		return nil
+	}
+	for {
+		if atomic.CompareAndSwapInt32(&cap.framePin, cap.framePin, 1) {
+			break
+		}
+	}
 	f := (*Frame)(atomic.LoadPointer(&cap.frame))
 	if f != nil {
 		f.convert(cap.dW, cap.dH)
+	}
+	for {
+		if atomic.CompareAndSwapInt32(&cap.framePin, cap.framePin, 0) {
+			break
+		}
 	}
 	return f
 }
