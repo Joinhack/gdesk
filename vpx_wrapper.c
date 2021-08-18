@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "vpx_wrapper.h"
 
 int I420ToRAW(
@@ -57,3 +58,31 @@ int nv12_to_i420(void *src_y, int src_stride_y, void *src_uv, int src_stride_uv,
     return 0;
 }
 
+int frame_data(vpx_codec_ctx_t* ctx, vpx_codec_iter_t* iter, int *key, char **data, int *len, int *pts) {
+    const vpx_codec_cx_pkt_t *pkt = vpx_codec_get_cx_data(ctx, iter);
+    if (pkt == NULL)
+        return 1;
+    for(;;) {
+        if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
+            *key = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) == 0;
+            *data = pkt->data.frame.buf;
+            *pts = pkt->data.frame.pts;
+            *len = pkt->data.frame.sz;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+int encode(vpx_codec_ctx_t *ctx, void *d, int w, int h, int64_t pts) {
+    vpx_image_t *imgT = vpx_img_wrap(NULL, VPX_IMG_FMT_I420, w, h, 16, d);
+    if (imgT == NULL) {
+        return 1;
+    }
+    if (vpx_codec_encode(ctx, imgT, pts, 1, VPX_EFLAG_FORCE_KF, VPX_DL_GOOD_QUALITY) != 0) {
+        return 1;
+    }
+    vpx_img_free(imgT);
+    return 0;
+}

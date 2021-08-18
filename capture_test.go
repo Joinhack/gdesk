@@ -12,6 +12,7 @@ func TestCapture(t *testing.T) {
 	display := GetPrimaryDisplay()
 	var c = NewCapturer()
 	c.Start(display)
+	defer c.Stop()
 	var f *Frame
 	for {
 		f = c.GetFrame()
@@ -20,6 +21,7 @@ func TestCapture(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
+	defer f.Release()
 	w := int(display.Width())
 	h := int(display.Height())
 	rect := image.Rect(0, 0, w, h)
@@ -42,7 +44,6 @@ func TestCapture(t *testing.T) {
 	}
 	img.Pix = dst
 	png.Encode(file, img)
-	f.Release()
+
 	time.Sleep(20 * time.Millisecond)
-	c.Stop()
 }
